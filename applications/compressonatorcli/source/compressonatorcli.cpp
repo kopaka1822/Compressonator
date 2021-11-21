@@ -1,5 +1,5 @@
 //=====================================================================
-// Copyright 2020 (c), Advanced Micro Devices, Inc. All rights reserved.
+// Copyright 2021 (c), Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -33,6 +33,7 @@
 #include "pluginmanager.h"
 #include "textureio.h"
 #include "version.h"
+#include "time.h"
 
 // #if defined(WIN32) && !defined(NO_LEGACY_BEHAVIOR)
 // #define OPTION_CMP_QT
@@ -45,7 +46,11 @@
 
 // Standard App Static Plugin Interfaces for minimal support
 #pragma comment(lib, "Image_ASTC.lib")
+
+#if (OPTION_BUILD_EXR == 1)
 #pragma comment(lib, "Image_EXR.lib")
+#endif
+
 #pragma comment(lib, "Image_KTX.lib")
 #ifdef _WIN32
 #pragma comment(lib, "Image_KTX2.lib")
@@ -76,15 +81,25 @@ CMIPS*               g_CMIPS;  // Global MIPS functions shared between app and a
 
 void AboutCompressonator()
 {
+    char year[5] = "2021";
+
+#ifdef USE_AUTODATE
+    time_t now = time(0);
+    auto tm = localtime(&now);
+    int tm_year = 0;
+    if (tm != nullptr) 
+        sprintf_s(year,"%d",tm->tm_year+1900);
+#endif
+
     printf("------------------------------------------------\n");
     // current build release
     if (VERSION_MINOR_MAJOR)
-        printf("compressonatorcli V%d.%d.%d Copyright AMD 2020\n", VERSION_MAJOR_MAJOR, VERSION_MAJOR_MINOR, VERSION_MINOR_MAJOR);
+        printf("compressonatorcli V%d.%d.%d Copyright AMD %s\n", VERSION_MAJOR_MAJOR, VERSION_MAJOR_MINOR, VERSION_MINOR_MAJOR,year);
     else
     {
         // Keep track of Customer patches from last release to current
         // This is what is shown when you build the exe outside of the automated Build System (such as Jenkins)
-        printf("compressonatorcli V4.1.0 Copyright AMD 2020\n");
+        printf("compressonatorcli V%d.%d.0 Copyright AMD %s\n",VERSION_MAJOR_MAJOR,VERSION_MAJOR_MINOR,year);
     }
     printf("------------------------------------------------\n");
     printf("\n");
@@ -224,16 +239,19 @@ void PrintUsage()
     printf("-WeightG <value>             The weighting of the Green or Y Channel\n");
     printf("-WeightB <value>             The weighting of the Blue or Z Channel\n");
     printf("-AlphaThreshold <value>      The alpha threshold to use when compressing\n");
-    printf("                             to DXT1 & BC1 with DXT1UseAlpha\n");
+    printf("                             to DXT1 & BC1\n");
     printf("                             Texels with an alpha value less than the threshold\n");
     printf("                             are treated as transparent\n");
-    printf("                             value is in the range of 0 to 255, default is 128\n");
+    printf("                             value is in the range of 1 to 255, 0 sets off\n");
     printf("-BlockRate <value>           ASTC 2D only - sets block size or bit rate\n");
     printf("                             value can be a bit per pixel rate from 0.0 to 9.9\n");
     printf("                             or can be a combination of x and y axes with paired\n");
     printf("                             values of 4,5,6,8,10 or 12 from 4x4 to 12x12\n");
     printf("-DXT1UseAlpha <value>        Encode single-bit alpha data.\n");
-    printf("                             Only valid when compressing to DXT1 & BC1\n");
+    printf("                             This option is deprecated use AlphaThreshold\n");
+    printf("-RefineSteps <value>         Adds extra steps in encoding for BC1\n");
+    printf("                             To improve quality over performance.\n");
+    printf("                             Step values are 1 and 2\n");
     printf("-CompressionSpeed <value>    The trade-off between compression speed & quality\n");
     printf("                             This setting is not used in BC6H and BC7\n");
     printf("-NumThreads <value>          Number of threads to initialize for ASTC,BC6H,BC7\n");
@@ -334,9 +352,9 @@ void PrintUsage()
     printf("CompressonatorCLI.exe -meshopt -optVCacheSize  32 -optOverdrawACMRThres  1.03 -optVFetch 0 source.gltf dest.gltf\n");
 #endif
 #ifdef _WIN32
-    printf("For additional help go to documents folder and type index.htlm \n");
+    printf("For additional help go to documents folder and type index.html \n");
 #else
-    printf("For additional help go to documents htlm folder and type index.htlm \n");
+    printf("For additional help go to documents htlm folder and type index.html \n");
 #endif
 }
 
@@ -430,7 +448,11 @@ int main(int argc, char* argv[])
     g_CMIPS = new CMIPS;
 
     g_pluginManager.registerStaticPlugin("IMAGE", "ASTC", (void*)make_Plugin_ASTC);
+
+#if (OPTION_BUILD_EXR == 1)
     g_pluginManager.registerStaticPlugin("IMAGE", "EXR", (void*)make_Plugin_EXR);
+#endif
+
     g_pluginManager.registerStaticPlugin("IMAGE", "TGA", (void*)make_Plugin_TGA);  // Use for load only, Qt will be used for Save
     g_pluginManager.registerStaticPlugin("IMAGE", "KTX", (void*)make_Plugin_KTX);
     g_pluginManager.registerStaticPlugin("IMAGE", "ANALYSIS", (void*)make_Plugin_CAnalysis);

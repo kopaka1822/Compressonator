@@ -27,6 +27,7 @@
 #include <float.h>
 #include "bc7_definitions.h"
 #include "debug.h"
+#include "cmp_core.h"
 
 #include <mutex>
 
@@ -51,8 +52,8 @@ class BC7BlockEncoder {
         else
             m_validModeMask = validModeMask;
 
-        m_quality            = min(1.0, max(quality,0.0));
-        m_performance        = min(1.0, max(performance,0.0));
+        m_quality            = cmp_minT(1.0, cmp_maxT(quality, 0.0));
+        m_performance        = cmp_minT(1.0, cmp_maxT(performance, 0.0));
         m_imageNeedsAlpha    = imageNeedsAlpha;
         m_smallestError      = DBL_MAX;
         m_largestError       = 0.0;
@@ -68,7 +69,7 @@ class BC7BlockEncoder {
             // to maximize quality with fast performance...
             m_errorThreshold = 256. * (1.0 - ((m_quality*2.0)/g_qFAST_THRESHOLD));
             // Limit the size of the partition search space based on Quality
-            m_partitionSearchSize = max( (1.0/16.0), ((m_quality*2.0) / g_qFAST_THRESHOLD));
+            m_partitionSearchSize = cmp_maxT( (1.0/16.0), ((m_quality*2.0) / g_qFAST_THRESHOLD));
         } else {
             // m_qaulity = set the quality user want to see on encoding
             // higher values will produce better encoding results.
@@ -79,7 +80,7 @@ class BC7BlockEncoder {
                 m_shakerRangeThreshold  = 255 * (m_quality / 10);                    // gain  performance within FAST_THRESHOLD and HIGHQULITY_THRESHOLD range
                 m_errorThreshold = 256. * (1.0 - (m_quality/g_qFAST_THRESHOLD));
                 // Limit the size of the partition search space based on Quality
-                m_partitionSearchSize = max( (1.0/16.0), (m_quality / g_qFAST_THRESHOLD));
+                m_partitionSearchSize = cmp_maxT( (1.0/16.0), (m_quality / g_qFAST_THRESHOLD));
             } else {
                 m_shakerRangeThreshold  = 255 * m_quality;     // lowers performance with incresing values
                 m_errorThreshold = 0;                         // Dont exit early
@@ -104,6 +105,8 @@ class BC7BlockEncoder {
                          CMP_BYTE   out[COMPRESSED_BLOCK_SIZE]);
 
   private:
+
+
     double quant_single_point_d(
         double data[MAX_ENTRIES][MAX_DIMENSION_BIG],
         int numEntries, int index[MAX_ENTRIES],
@@ -138,7 +141,7 @@ class BC7BlockEncoder {
         int epo_code[2][MAX_DIMENSION_BIG],
         int Mi_,                // last cluster
         int bits[3],            // including parity
-        CMP_qt type,
+        CMP_qt_cpu type,
         int dimension
     );
 
