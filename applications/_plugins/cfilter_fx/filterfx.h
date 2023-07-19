@@ -26,6 +26,7 @@
 #define _PLUGIN_IMAGE_FILTERFX_H
 
 #include "plugininterface.h"
+#include "cmp_plugininterface.h"
 
 #ifdef _WIN32
 #include <Windows.h>

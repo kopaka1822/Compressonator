@@ -59,7 +59,7 @@ class Plugin_glTF_DX12_EX : public PluginInterface_3DModel {
     void OnReSizeView(CMP_LONG w, CMP_LONG h);
   private:
     glTF_DX12DeviceEx  *m_glTF_DX12DeviceEx;
-    GLTFCommon         *m_gltfLoader;
+      CMP_GLTFCommon*    m_gltfLoader;
     HWND                m_hwnd;
     QWidget             *m_parent;
 };

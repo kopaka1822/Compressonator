@@ -42,15 +42,6 @@
 #include "qtgroupboxpropertybrowser.h"
 
 // As defined by D3DX9
-#define CMP_D3DX_FILTER_NONE 1
-#define CMP_D3DX_FILTER_POINT 2
-#define CMP_D3DX_FILTER_LINEAR 3
-#define CMP_D3DX_FILTER_TRIANGLE 4
-#define CMP_D3DX_FILTER_BOX 5
-
-#define CMP_D3DX_FILTER_MIRROR (7 << 16)
-#define CMP_D3DX_FILTER_DITHER (1 << 19)
-#define CMP_D3DX_FILTER_SRGB (3 << 21)
 
 class CGenMips : public QWidget
 {
@@ -67,10 +58,8 @@ public:
 private:
     CMP_CFilterParams m_CFilterParams;
 
-    int m_ImageSize_W;
-    int m_ImageSize_H;
-    int m_MipLevels;
-    int m_minsize[MAX_MIPLEVEL_SUPPORTED];
+    int m_selectedMipLevel;
+    int m_levelWidths[MAX_MIPLEVEL_SUPPORTED];
 
     QtVariantProperty* m_propertyMipLevels;
     QtVariantProperty* m_propertyGamma;
@@ -80,7 +69,7 @@ private:
     QtVariantProperty* m_propertyMirrorPixels;
     //QtVariantProperty* m_propertyPerformFiltering;
 
-    QStringList m_MipLevelSizes;
+    QStringList m_mipLevelSizes;
 
     void addProperty(QtVariantProperty* property, const QString& id);
     void addD3DXProperty(QtVariantProperty* property, const QString& id);
@@ -103,7 +92,7 @@ private:
 
 Q_SIGNALS:
 
-    void generateMIPMap(CMP_CFilterParams m_CFilterParams, QTreeWidgetItem* item);
+    void signalGenerateMipmaps(CMP_CFilterParams m_CFilterParams, const std::vector<QTreeWidgetItem*>& items);
 
 public Q_SLOTS:
     void valueChanged(QtProperty* property, const QVariant& value);
@@ -111,6 +100,6 @@ public Q_SLOTS:
     void onGenerate();
 
 public:
-    QTreeWidgetItem* m_mipsitem;
+    std::vector<QTreeWidgetItem*> m_imageItems;
 };
 #endif

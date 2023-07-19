@@ -3,6 +3,108 @@ Revision History
 
 For the latest documentation, please refer to:  http://compressonator.readthedocs.io/en/latest/
 
+V4.4
+~~~~
+July 2023
+
+**Features**
+
+- SIMD Support in BC1 Encoding
+
+    - Added new code paths for SSE4, AVX2, and AVX-512 encoding in Compressonator Core that are automatically chosen based on CPU support
+    - New functions added to the core interface to allow users to manually enable/disable SIMD instructions if desired: **EnableSSE4()**, **EnableAVX2()**, **EnableAVX512()**, and **DisableSIMD()**
+    - Another new function was added to allow users to query the SIMD instruction set extensions currently being used in Compressonator Core: **GetEnabledSIMDExtension()**
+
+- Mipmap Generation Updates
+    
+    - New option called "FilterGamma" added to Compressonator CLI which allows users to apply gamma correction to mipmap levels after generation
+    - Mipmap generation behaviour has been modified to only stop once all dimensions of the mipmap level are equal to or below the minimum size specified
+
+- Miscellaneous Changes
+
+    - The default location of build artifacts has changed from *build* to *build/bin*, and build scripts have been moved to *build*
+    - A new CMake project for building only the SDK in various configurations has been created under the *build/sdk* folder
+    - The regular CMake build now requires three environment variables to be set that point to external dependency installations: **OPENCV_DIR**, **QT_DIR**, and **VULKAN_DIR** (more details can be found in the build section of the docs)
+    - 16-bit PNG support added to Compressonator Framework
+    - Removed implicit channel swizzling from all codec buffer classes, ensuring more consistent behaviour
+    - Renamed CMP_TestCore project to CMP_UnitTests and expanded the suite of unit tests
+    - Fixed compilation errors for BC6H core shader
+    - Dependency on DirectX 9 and DirectX 10 DLL files has been replaced with the use of DirectXTex
+    - Silent option in Compressonator CLI properly disables all output other than fatal errors.
+    - Edited documentation to fix typo for "GenGPUMipMaps" option
+    - Improved BC7 codec performance by keeping initialization data in memory rather than freeing it after each call to CMP_ConvertTexture
+
+**Known issues and limitations**
+
+- Compressing RG8 format images to BC5 results in black data in the output red channel
+- Potential buffer overflow in RG8 Codec Buffer class when converting RG8 data to BC5
+- Swizzling is not supported in all variations of the codec buffer classes
+
+V4.3
+~~~~
+January 2023
+
+**Features**
+
+- Brotli-G
+
+    - New lossless compression format CMP_FORMAT_BROTLIG that can compress all types of data, not just textures
+    - Command line support via CompressonatorCLI as format "BRLG"
+    - Encoding is done using the CPU and decoding can be done by either the CPU or GPU
+    - New Compressonator file format for compressed Brotli-G data, ".brlg"
+
+- Mipmap Updates
+
+    - Generating mipmaps in the GUI app will process every selected image, rather than stop after the first one
+    - Fixed crash when trying to generate mipmaps for a file with existing mipmaps
+    - Fixed crash when attempting to generate mipmaps for greyscale images through the GUI app
+
+- Compressed to Compressed Format Transcoding
+
+    - Supports BCn to BCn conversions
+    - Works by using a temporary uncompressed format as an intermediate: compressed input → uncompressed → compressed output
+
+- RGBA1010102 Format Support
+
+    - Added new format: CMP_FORMAT_RGBA_1010102 which is a variation of the existing CMP_FORMAT_2101010 format
+    - Added ability to load DDS files in the new format
+
+- Option to Use Original File Names when Compressing
+
+    - Changed default behaviour of CompressonatorCLI so that it no longer "mangles" names, meaning it no longer adds extra text to the end of destination file names to identify the source file extension and destination format. 
+    - When processing batches of files CompressonatorCLI will use the source file names as the destination, unless multiple sources share the same file name. In that case, it will mangle the file names of the repeated files.
+    - Added the flag "-UseMangledFileNames" for CompressonatorCLI that will revert back to the previous behaviour of mangled destination file names.
+    - A new application setting was added to CompressonatorGUI, "Use Original File Names", which will use the source's file name as the destination's file name for the first destination per source. This is enabled by default.
+
+- BC6H Codec Improvements
+   
+   - Better handling of edge cases like infinity and NaN values in the input data
+   - BC6H_SF preserves negative numbers through compression and decompression
+
+- Mesh Optimization
+
+   - Saved results can no longer contain invalid GLTF data when the input lacks some properties, like animations
+   - Fixed handling of file paths so that paths with drive letters specified in them work as expected
+   - Improved error messages and error handling
+
+- GUI Compression Consistency Improvement
+
+   - Changes made to the three main processing buttons: the button in the top bar, the button in the property view, and the right-click context menu. Their behaviour is now more consistent regardless of program state.
+
+- Miscellaneous Changes/Improvements
+
+    - CMP_FORMAT_RGBA_32F is recognized as a valid format for compression
+    - Fixed BC4 compression with R8 input
+    - Various small improvements in how CompressonatorCLI handles files and folders, especially in batch processing
+
+**Known issues and limitations**
+
+- Transcoding decreases image quality.
+- R8 images are currently loaded into the red channel of a 4 channel ARGB_8888 image. This does not affect the results of any compressions, but the GUI will continue to show ARGB_8888 instead of R_8.
+- The GPU_HW encoding option produces corrupted results on some machines when encoding to BC4_S or BC5_S. There is also an issue with generating and compressing mipmaps using the GPU_HW option that results in the lower mipmap levels being completely blank on some machines.
+- Brotli-G encoding might sometimes result in compressed files that are slightly larger than the source file, particularly for well compressed sources. This is a limitation similar to ZIP compression, where small files or well compressed images might not be able to be compressed very well.
+- Brotli-G encoding treats all source files as merely binary data, so it will not be able to create mipmaps or do any other extra processing to images during encoding.
+
 V4.2
 ~~~~
 July 2021
