@@ -198,10 +198,8 @@ CodecType GetCodecType(CMP_FORMAT format) {
     case CMP_FORMAT_ABGR_16:
     case CMP_FORMAT_RGBA_16:
     case CMP_FORMAT_BGRA_16:
-    case CMP_FORMAT_RGBA_16F:
     case CMP_FORMAT_BGRA_16F:
     case CMP_FORMAT_ABGR_32F:
-    case CMP_FORMAT_RGBA_32F:
     case CMP_FORMAT_BGRA_32F:
     case CMP_FORMAT_RGB_32F:
     case CMP_FORMAT_BGR_32F:
